@@ -4,7 +4,8 @@
 ### Description:
 
 Simple insurance service for creating and managing insurance policies. Abilities: creating policies, adding insurance coverage and calculating total payable.
--Unit tested with XUnit and FluentAssertions NuGet.
+
+- Unit tested with XUnit and FluentAssertions NuGet.
 
 ---
 
