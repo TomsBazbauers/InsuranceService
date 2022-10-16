@@ -4,7 +4,7 @@
 ### Description:
 
 Simple insurance service for creating, managing insurance policies and their coverage.
-- Unit tested with XUnit + FluentAssertions NuGet.
+- Unit tested with XUnit and FluentAssertions NuGet.
 
 ---
 
