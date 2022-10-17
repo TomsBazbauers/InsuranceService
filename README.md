@@ -3,8 +3,8 @@
 
 ### Description:
 
-Think about it as a real insurance company
-Implement rules which seems logical to you.
+Simple insurance service for creating, managing insurance policies and their coverage.
+- Unit tested with XUnit and FluentAssertions NuGet.
 
 ---
 
