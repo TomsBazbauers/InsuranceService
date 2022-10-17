@@ -17,18 +17,26 @@ namespace InsuranceService
             _riskListValidators = new List<IRiskListValidator>() { new RiskRequestValidator(), new RiskAvailabilityValidator() };
             _registeredPolicies = new List<IPolicy>()
              {
-                 new Policy("BMW 330 2022", new DateTime(2022, 01, 01), new DateTime(2025, 01, 01), new List<Risk>() {new Risk("General", 360m)}),
-                 new Policy("AUDI A3 2020", new DateTime(2023, 01, 01), new DateTime(2025, 01, 01), new List<Risk>() {new Risk("Burglary", 720m)}),
-                 new Policy("VW GOLF 2015", new DateTime(2014, 03, 19), new DateTime(2028, 01, 01), new List<Risk>() {new Risk("Weather Damage", 120m)}),
-                 new Policy("OPEL ZAFIRA 2021", new DateTime(2021, 04, 04), new DateTime(2030, 01, 01), new List<Risk>() {new Risk("Burglary", 720m)})
+                 new Policy("BMW 330 2022", 
+                 new DateTime(2022, 01, 01), new DateTime(2025, 01, 01), 
+                 new List<Risk>() {new Risk("General", 360m, new DateTime(2022, 01, 01)) }),
+                 new Policy("AUDI A3 2020", 
+                 new DateTime(2023, 01, 01), new DateTime(2025, 01, 01), 
+                 new List<Risk>() {new Risk("Burglary", 720m,  new DateTime(2023, 01, 01))}),
+                 new Policy("VW GOLF 2015", 
+                 new DateTime(2014, 03, 19), new DateTime(2028, 01, 01), 
+                 new List<Risk>() {new Risk("Weather Damage", 120m, new DateTime(2014, 03, 19)) }),
+                 new Policy("OPEL ZAFIRA 2021", 
+                 new DateTime(2021, 04, 04), new DateTime(2030, 01, 01), 
+                 new List<Risk>() {new Risk("Burglary", 720m, new DateTime(2021, 04, 04)) })
              };
 
             _policyRegistry = new PolicyRegistry(_registeredPolicies, new List<IPolicyValidator>() { new PolicyInfoValidator() }, new PolicyListValidator());
             _sut = new InsuranceCompany("119 Insurance",
                 new List<Risk>() {
-                    new Risk("General", 360m),
-                    new Risk("Burglary", 720m),
-                    new Risk("Weather Damage", 120m) },
+                    new Risk("General", 360m, new DateTime(2021, 01, 01)),
+                    new Risk("Burglary", 720m, new DateTime(2021, 01, 01)),
+                    new Risk("Weather Damage", 120m, new DateTime(2021, 01, 01)) },
                 _riskValidators, _riskListValidators, _policyRegistry);
         }
 
@@ -38,7 +46,7 @@ namespace InsuranceService
             // Arrange
             var testPolicyName = "OPEL ZAFIRA 2021";
             var testPolicyValidFrom = new DateTime(2021, 04, 04);
-            var testRisk = new Risk("General", 360m);
+            var testRisk = new Risk("General", 360m, new DateTime(2021, 04, 04));
 
             // Act
             _sut.AddRisk(testPolicyName, testRisk, testPolicyValidFrom);
@@ -54,7 +62,7 @@ namespace InsuranceService
             // Arrange
             var testPolicyName = "OPEL ZAFIRA 2021";
             var testPolicyValidFrom = new DateTime(2021, 04, 04);
-            var testRisk = new Risk("", 360m);
+            var testRisk = new Risk("", 360m, new DateTime(2021, 04, 04));
 
             // Act
             Action action = () => _sut.AddRisk(testPolicyName, testRisk, testPolicyValidFrom);
@@ -70,7 +78,7 @@ namespace InsuranceService
             // Arrange
             var testPolicyName = "OPEL ZAFIRA 2021";
             var testPolicyValidFrom = new DateTime(2021, 04, 04);
-            var testRisk = new Risk("General", 0m);
+            var testRisk = new Risk("General", 0m, new DateTime(2021, 04, 04));
 
             // Act
             Action action = () => _sut.AddRisk(testPolicyName, testRisk, testPolicyValidFrom);
@@ -85,7 +93,7 @@ namespace InsuranceService
             // Arrange
             var testPolicyName = "OPEL ZAFIRA 2021";
             var testPolicyValidFrom = new DateTime(2021, 04, 04);
-            var testRisk = new Risk("Cyber Security", 120m);
+            var testRisk = new Risk("Cyber Security", 120m, new DateTime(2022, 01, 01));
 
             // Act
             Action action = () => _sut.AddRisk(testPolicyName, testRisk, testPolicyValidFrom);
@@ -114,7 +122,9 @@ namespace InsuranceService
         public void GetPolicy_InputInvalid_ThrowsException()
         {
             // Arrange
-            var testPolicy = new Policy("BMW M5 1999", new DateTime(2005, 10, 01), new DateTime(2025, 01, 01), new List<Risk>() { new Risk("General", 360m) });
+            var testPolicy = new Policy("BMW M5 1999", new DateTime(2005, 10, 01), new DateTime(2025, 01, 01), new List<Risk>() { 
+                new Risk("General", 360m, 
+                new DateTime(2022, 01, 01)) });
 
             // Act
             Action action = () => _sut.GetPolicy(testPolicy.NameOfInsuredObject, testPolicy.ValidFrom);
@@ -131,7 +141,9 @@ namespace InsuranceService
             // Arrange
             var testName = "AUDI A6 2020";
             var testValidFrom = new DateTime(2022, 01, 01);
-            var testRisks = new List<Risk>() { new Risk("General", 360m), new Risk("Burglary", 720m) };
+            var testRisks = new List<Risk>() { 
+                new Risk("General", 360m, new DateTime(2022, 01, 01)), 
+                new Risk("Burglary", 720m, new DateTime(2022, 01, 01)) };
             short testDuration = 36;
 
             // Act
@@ -150,7 +162,9 @@ namespace InsuranceService
             // Arrange
             var testName = "AUDI A6 2020";
             var testValidFrom = new DateTime(2022, 01, 01);
-            var testRisks = new List<Risk>() { new Risk("Generals", 360m), new Risk("Burglary", 720m) };
+            var testRisks = new List<Risk>() {
+                new Risk("Generals", 360m, new DateTime(2022, 01, 01)), 
+                new Risk("Burglary", 720m, new DateTime(2022, 01, 01)) };
             short testDuration = 36;
 
             // Act
@@ -165,7 +179,8 @@ namespace InsuranceService
         public void SellPolicy_InputInvalidDuplicate_ThrowsException()
         {
             // Arrange
-            var testPolicy = new Policy("BMW 330 2022", new DateTime(2022, 01, 01), new DateTime(2025, 01, 01), new List<Risk>() { new Risk("General", 360m) });
+            var testPolicy = new Policy("BMW 330 2022", new DateTime(2022, 01, 01), 
+                new DateTime(2025, 01, 01), new List<Risk>() { new Risk("General", 360m, new DateTime(2022, 01, 01)) });
 
             // Act
             Action action = () => _sut.SellPolicy(testPolicy.NameOfInsuredObject, testPolicy.ValidFrom, 12, testPolicy.InsuredRisks);
@@ -180,7 +195,8 @@ namespace InsuranceService
         public void SellPolicy_InputInvalidName_ThrowsException()
         {
             // Arrange
-            var testPolicy = new Policy("", new DateTime(2022, 01, 01), new DateTime(2025, 01, 01), new List<Risk>() { new Risk("General", 360m) });
+            var testPolicy = new Policy("", new DateTime(2022, 01, 01), 
+                new DateTime(2025, 01, 01), new List<Risk>() { new Risk("General", 360m, new DateTime(2022, 01, 01)) });
 
             // Act
             Action action = () => _sut.SellPolicy(testPolicy.NameOfInsuredObject, testPolicy.ValidFrom, 12, testPolicy.InsuredRisks);

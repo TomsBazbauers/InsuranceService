@@ -11,7 +11,7 @@ namespace InsuranceService
             // Arrange
             var testValidFrom = new DateTime(2022, 01, 01);
             var testValidTill = new DateTime(2024, 01, 01);
-            var testInsuredRisks = new List<Risk>() { new Risk("General", 360m), new Risk("Burglary", 720m) };
+            var testInsuredRisks = new List<Risk>() { new Risk("General", 360m, new DateTime(2022, 01, 01)), new Risk("Burglary", 720m, new DateTime(2022, 01, 01)) };
             var expected = (360 + 720) / 12 * 24;
 
             // Act

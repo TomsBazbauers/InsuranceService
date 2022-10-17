@@ -2,6 +2,6 @@
 {
     public interface IRiskValidator
     {
-        bool IsValid(Risk risk);
+        bool IsValid(Risk risk, DateTime validFrom);
     }
 }

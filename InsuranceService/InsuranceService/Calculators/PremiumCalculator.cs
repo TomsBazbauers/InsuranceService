@@ -11,11 +11,16 @@
         public PremiumCalculator(DateTime validFrom, DateTime validTill, IList<Risk> insuredRisks)
         {
             var totalMonthlyPremium = new List<decimal>();
-            var policyPeriod = Math.Round(validTill.Subtract(validFrom).Days / (yearLengthD / yearLengthM));
-            
-            insuredRisks.ToList().ForEach(risk => totalMonthlyPremium.Add(risk.YearlyPrice / yearLengthM));
+            insuredRisks
+                .ToList()
+                .ForEach(risk => totalMonthlyPremium.Add(risk.YearlyPrice / yearLengthM * ExtractPeriod(risk.EffectiveDate, validTill)));
 
-            _totalPayable = Math.Round(totalMonthlyPremium.Sum() * policyPeriod, 2);
+            _totalPayable = Math.Round(totalMonthlyPremium.Sum(), 2);
+        }
+
+        public decimal ExtractPeriod(DateTime start, DateTime end)
+        {
+            return Math.Round(end.Subtract(start).Days / (yearLengthD / yearLengthM));
         }
     }
 }

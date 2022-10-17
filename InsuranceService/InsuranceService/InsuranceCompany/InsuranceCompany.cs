@@ -22,7 +22,7 @@
 
         public void AddRisk(string nameOfInsuredObject, Risk risk, DateTime validFrom)
         {
-            if (_riskValidators.All(v => v.IsValid(risk))
+            if (_riskValidators.All(v => v.IsValid(risk, validFrom))
                 && _riskListValidators.All(v => v.IsValid(risk, AvailableRisks)))
             {
                 _policyRegistry.AddCoverage(nameOfInsuredObject, risk, validFrom);
@@ -38,7 +38,7 @@
         {
             IPolicy? requestedPolicy = null;
 
-            if (selectedRisks.All(risk => _riskValidators.All(v => v.IsValid(risk))
+            if (selectedRisks.All(risk => _riskValidators.All(v => v.IsValid(risk, validFrom))
             && _riskListValidators.All(v => v.IsValid(risk, AvailableRisks))))
             {
                 requestedPolicy = _policyRegistry.RegisterPolicy(nameOfInsuredObject, validFrom, validMonths, selectedRisks);
