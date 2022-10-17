@@ -40,6 +40,5 @@ namespace InsuranceService
             // Assert
             actual.TotalPayable.Should().Be(expected);
         }
-
     }
 }
