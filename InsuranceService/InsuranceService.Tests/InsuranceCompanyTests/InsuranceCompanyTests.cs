@@ -31,7 +31,9 @@ namespace InsuranceService
                  new List<Risk>() {new Risk("Burglary", 720m, new DateTime(2021, 04, 04)) })
              };
 
-            _policyRegistry = new PolicyRegistry(_registeredPolicies, new List<IPolicyValidator>() { new PolicyInfoValidator() }, new PolicyListValidator());
+            _policyRegistry = new PolicyRegistry(_registeredPolicies, 
+                new List<IPolicyValidator>() { new PolicyInfoValidator() }, new PolicyListValidator());
+            
             _sut = new InsuranceCompany("119 Insurance",
                 new List<Risk>() {
                     new Risk("General", 360m, new DateTime(2021, 01, 01)),
@@ -122,9 +124,9 @@ namespace InsuranceService
         public void GetPolicy_InputInvalid_ThrowsException()
         {
             // Arrange
-            var testPolicy = new Policy("BMW M5 1999", new DateTime(2005, 10, 01), new DateTime(2025, 01, 01), new List<Risk>() { 
-                new Risk("General", 360m, 
-                new DateTime(2022, 01, 01)) });
+            var testPolicy = new Policy("BMW M5 1999", 
+                new DateTime(2005, 10, 01), new DateTime(2025, 01, 01), 
+                new List<Risk>() { new Risk("General", 360m, new DateTime(2022, 01, 01)) });
 
             // Act
             Action action = () => _sut.GetPolicy(testPolicy.NameOfInsuredObject, testPolicy.ValidFrom);

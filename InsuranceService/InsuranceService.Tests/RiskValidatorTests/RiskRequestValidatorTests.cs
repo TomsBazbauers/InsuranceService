@@ -13,8 +13,10 @@ namespace InsuranceService
             _sut = new RiskRequestValidator();
             _riskList = 
                 new List<Risk> { 
-                new Risk("General Insurance", 360m, new DateTime(2022, 01, 01)), new Risk("Cyber Security", 120m, new DateTime(2022, 01, 01)), 
-                new Risk("Burglary", 240m, new DateTime(2022, 01, 01)), new Risk("Weather Damage", 180m, new DateTime(2022, 01, 01)) };
+                new Risk("General Insurance", 360m, new DateTime(2022, 01, 01)), 
+                new Risk("Cyber Security", 120m, new DateTime(2022, 01, 01)), 
+                new Risk("Burglary", 240m, new DateTime(2022, 01, 01)), 
+                new Risk("Weather Damage", 180m, new DateTime(2022, 01, 01)) };
         }
 
         [Fact]

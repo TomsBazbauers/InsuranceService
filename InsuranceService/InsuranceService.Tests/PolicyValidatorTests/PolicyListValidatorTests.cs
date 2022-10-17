@@ -13,10 +13,14 @@ namespace InsuranceService
             _sut = new PolicyListValidator();
             _testList = new List<IPolicy>()
              {
-                 new Policy("BMW 330 2022", new DateTime(2022, 01, 01), new DateTime(2025, 01, 01), new List<Risk>() {new Risk("General", 720m, new DateTime(2022, 01, 01)) }),
-                 new Policy("AUDI A3 2020", new DateTime(2020, 01, 01), new DateTime(2020, 01, 01), new List<Risk>() {new Risk("Burglary", 320m, new DateTime(2020, 01, 01)) }),
-                 new Policy("VW GOLF 2015", new DateTime(2014, 03, 19), new DateTime(2028, 01, 01), new List<Risk>() {new Risk("General", 220m, new DateTime(2014, 03, 19)) }),
-                 new Policy("OPEL ZAFIRA 2021", new DateTime(2021, 04, 04), new DateTime(2030, 01, 01), new List<Risk>() {new Risk("Burglary", 320m, new DateTime(2021, 04, 04)) })
+                 new Policy("BMW 330 2022", new DateTime(2022, 01, 01), new DateTime(2025, 01, 01), 
+                 new List<Risk>() {new Risk("General", 720m, new DateTime(2022, 01, 01)) }),
+                 new Policy("AUDI A3 2020", new DateTime(2020, 01, 01), new DateTime(2020, 01, 01), 
+                 new List<Risk>() {new Risk("Burglary", 320m, new DateTime(2020, 01, 01)) }),
+                 new Policy("VW GOLF 2015", new DateTime(2014, 03, 19), new DateTime(2028, 01, 01), 
+                 new List<Risk>() {new Risk("General", 220m, new DateTime(2014, 03, 19)) }),
+                 new Policy("OPEL ZAFIRA 2021", new DateTime(2021, 04, 04), new DateTime(2030, 01, 01), 
+                 new List<Risk>() {new Risk("Burglary", 320m, new DateTime(2021, 04, 04)) })
              };
         }
 
