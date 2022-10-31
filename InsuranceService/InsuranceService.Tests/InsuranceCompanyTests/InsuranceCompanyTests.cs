@@ -1,212 +1,194 @@
 ﻿using FluentAssertions;
+using Moq;
+using Moq.AutoMock;
 using Xunit;
 
-namespace InsuranceService
+namespace InsuranceService.Tests
 {
     public class InsuranceCompanyTests
     {
-        private IInsuranceCompany _sut;
-        private readonly IEnumerable<IRiskValidator> _riskValidators;
-        private readonly IEnumerable<IRiskListValidator> _riskListValidators;
-        private readonly IPolicyRegistry _policyRegistry;
-        private IList<IPolicy> _registeredPolicies;
+        private AutoMocker _mocker;
+        private InsuranceCompany _sut;
+        private IEnumerable<IRiskValidator> _riskValidators;
+        private IEnumerable<IRiskListValidator> _riskListValidators;
+        private Mock<IPolicyRegistry> _policyRegistryMock;
+        private Policy _testPolicy;
 
         public InsuranceCompanyTests()
         {
+            _mocker = new AutoMocker();
             _riskValidators = new List<IRiskValidator>() { new RiskInfoValidator() };
             _riskListValidators = new List<IRiskListValidator>() { new RiskRequestValidator(), new RiskAvailabilityValidator() };
-            _registeredPolicies = new List<IPolicy>()
-             {
-                 new Policy("BMW 330 2022", 
-                 new DateTime(2022, 01, 01), new DateTime(2025, 01, 01), 
-                 new List<Risk>() {new Risk("General", 360m, new DateTime(2022, 01, 01)) }),
-                 new Policy("AUDI A3 2020", 
-                 new DateTime(2023, 01, 01), new DateTime(2025, 01, 01), 
-                 new List<Risk>() {new Risk("Burglary", 720m,  new DateTime(2023, 01, 01))}),
-                 new Policy("VW GOLF 2015", 
-                 new DateTime(2014, 03, 19), new DateTime(2028, 01, 01), 
-                 new List<Risk>() {new Risk("Weather Damage", 120m, new DateTime(2014, 03, 19)) }),
-                 new Policy("OPEL ZAFIRA 2021", 
-                 new DateTime(2021, 04, 04), new DateTime(2030, 01, 01), 
-                 new List<Risk>() {new Risk("Burglary", 720m, new DateTime(2021, 04, 04)) })
-             };
+            var offer = new List<Risk>() { new Risk("General Insurance", 360m), new Risk("Burglary", 120m) };
+            _policyRegistryMock = _mocker.GetMock<IPolicyRegistry>();
+            _testPolicy = new Policy
+                (
+                "AUDI A3 2022", DateTime.Now.Date, DateTime.Now.Date.AddMonths(24),
+                new List<Risk>() { new Risk("General Insurance", 360m, DateTime.Now) }
+                );
 
-            _policyRegistry = new PolicyRegistry(_registeredPolicies, 
-                new List<IPolicyValidator>() { new PolicyInfoValidator() }, new PolicyListValidator());
-            
-            _sut = new InsuranceCompany("119 Insurance",
-                new List<Risk>() {
-                    new Risk("General", 360m, new DateTime(2021, 01, 01)),
-                    new Risk("Burglary", 720m, new DateTime(2021, 01, 01)),
-                    new Risk("Weather Damage", 120m, new DateTime(2021, 01, 01)) },
-                _riskValidators, _riskListValidators, _policyRegistry);
+            _sut = new InsuranceCompany("119 Insurance", offer, _riskValidators, _riskListValidators, _policyRegistryMock.Object);
         }
 
         [Fact]
-        public void AddRisk_InputValid_RiskAdded()
+        public void GetPolicy_InputValid_PolicyReturnedAsExpected()
         {
             // Arrange
-            var testPolicyName = "OPEL ZAFIRA 2021";
-            var testPolicyValidFrom = new DateTime(2021, 04, 04);
-            var testRisk = new Risk("General", 360m, new DateTime(2021, 04, 04));
+            _policyRegistryMock
+                .Setup(m => m.FindPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom)).Returns(_testPolicy);
 
             // Act
-            _sut.AddRisk(testPolicyName, testRisk, testPolicyValidFrom);
+            var actual = _sut.GetPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom);
 
             // Assert
-            _registeredPolicies[3].InsuredRisks.Count.Should().Be(2);
-            _registeredPolicies[3].InsuredRisks[1].Should().Be(testRisk);
+            actual.NameOfInsuredObject.Should().Be("AUDI A3 2022");
+            actual.InsuredRisks.Should().HaveCount(1);
+            actual.ValidFrom.Should().Be(DateTime.Now.Date);
+            actual.ValidTill.Should().Be(DateTime.Now.Date.AddMonths(24));
         }
 
         [Fact]
-        public void AddRisk_InputInvalidName_ThrowsException()
+        public void GetPolicy_InputInvalidValidFrom_ThrowsException()
         {
             // Arrange
-            var testPolicyName = "OPEL ZAFIRA 2021";
-            var testPolicyValidFrom = new DateTime(2021, 04, 04);
-            var testRisk = new Risk("", 360m, new DateTime(2021, 04, 04));
+            _policyRegistryMock
+                .Setup(m => m.FindPolicy(_testPolicy.NameOfInsuredObject, DateTime.MinValue))
+                .Throws(new PolicyNotFoundException(string.Join(", ", _testPolicy.NameOfInsuredObject, DateTime.MinValue)));
 
             // Act
-            Action action = () => _sut.AddRisk(testPolicyName, testRisk, testPolicyValidFrom);
-
-            // Assert
-            action.Should().Throw<InvalidRiskInfoException>().WithMessage($"[Invalid risk request. Risk properties missing or invalid]");
-            _registeredPolicies[3].InsuredRisks.Count.Should().Be(1);
-        }
-
-        [Fact]
-        public void AddRisk_InputInvalidPrice_ThrowsException()
-        {
-            // Arrange
-            var testPolicyName = "OPEL ZAFIRA 2021";
-            var testPolicyValidFrom = new DateTime(2021, 04, 04);
-            var testRisk = new Risk("General", 0m, new DateTime(2021, 04, 04));
-
-            // Act
-            Action action = () => _sut.AddRisk(testPolicyName, testRisk, testPolicyValidFrom);
-
-            // Assert
-            action.Should().Throw<InvalidRiskInfoException>().WithMessage($"[Invalid risk request. Risk properties missing or invalid]");
-        }
-
-        [Fact]
-        public void AddRisk_InputInvalidRiskNotOffered_ThrowsException()
-        {
-            // Arrange
-            var testPolicyName = "OPEL ZAFIRA 2021";
-            var testPolicyValidFrom = new DateTime(2021, 04, 04);
-            var testRisk = new Risk("Cyber Security", 120m, new DateTime(2022, 01, 01));
-
-            // Act
-            Action action = () => _sut.AddRisk(testPolicyName, testRisk, testPolicyValidFrom);
-
-            // Assert
-            action.Should().Throw<InvalidRiskRequestException>()
-               .WithMessage($"[The requested risk offer is not found]");
-        }
-
-        [Fact]
-        public void GetPolicy_InputValid_ReturnsPolicy()
-        {
-            // Arrange
-            var testPolicy = _registeredPolicies[1];
-
-            // Act
-            var actual = _sut.GetPolicy(testPolicy.NameOfInsuredObject, testPolicy.ValidFrom);
-
-            // Assert
-            actual.NameOfInsuredObject.Should().BeSameAs(testPolicy.NameOfInsuredObject);
-            actual.ValidFrom.Should().BeSameDateAs(testPolicy.ValidFrom);
-            actual.Premium.Should().Be(testPolicy.Premium);
-        }
-
-        [Fact]
-        public void GetPolicy_InputInvalid_ThrowsException()
-        {
-            // Arrange
-            var testPolicy = new Policy("BMW M5 1999", 
-                new DateTime(2005, 10, 01), new DateTime(2025, 01, 01), 
-                new List<Risk>() { new Risk("General", 360m, new DateTime(2022, 01, 01)) });
-
-            // Act
-            Action action = () => _sut.GetPolicy(testPolicy.NameOfInsuredObject, testPolicy.ValidFrom);
+            Action action = () => _sut.GetPolicy(_testPolicy.NameOfInsuredObject, DateTime.MinValue);
 
             // Assert
             action.Should().Throw<PolicyNotFoundException>()
-                .WithMessage($"[Requested policy with the properties: " +
-                $"'{string.Join(", ", testPolicy.NameOfInsuredObject, testPolicy.ValidFrom)}' is not found]");
+               .WithMessage($"[Requested policy with the properties: '{string.Join(", ", _testPolicy.NameOfInsuredObject, DateTime.MinValue)}' is not found]");
         }
 
         [Fact]
-        public void SellPolicy_InputValid_ReturnsPolicy()
+        public void GetPolicy_InputInvalidId_ThrowsException()
         {
             // Arrange
-            var testName = "AUDI A6 2020";
-            var testValidFrom = new DateTime(2022, 01, 01);
-            var testRisks = new List<Risk>() { 
-                new Risk("General", 360m, new DateTime(2022, 01, 01)), 
-                new Risk("Burglary", 720m, new DateTime(2022, 01, 01)) };
-            short testDuration = 36;
+            _policyRegistryMock
+                .Setup(m => m.FindPolicy("OPEL ASTRA 2022", _testPolicy.ValidFrom))
+                .Throws(new PolicyNotFoundException(string.Join(", ", "OPEL ASTRA 2022", _testPolicy.ValidFrom)));
 
             // Act
-            var actual = _sut.SellPolicy(testName, testValidFrom, testDuration, testRisks);
+            Action action = () => _sut.GetPolicy("OPEL ASTRA 2022", _testPolicy.ValidFrom);
 
             // Assert
-            actual.NameOfInsuredObject.Should().BeSameAs(testName);
-            actual.ValidFrom.Should().BeSameDateAs(testValidFrom);
-            actual.ValidTill.Should().Be(testValidFrom.AddMonths(testDuration));
-            actual.Premium.Should().Be(3240);
+            action.Should().Throw<PolicyNotFoundException>()
+               .WithMessage($"[Requested policy with the properties: '{string.Join(", ", "OPEL ASTRA 2022", _testPolicy.ValidFrom)}' is not found]");
+        }
+
+        [Fact]
+        public void SellPolicy_InputValid_PolicySold()
+        {
+            // Arrange
+            _policyRegistryMock
+                .Setup(m => m
+                .RegisterPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom, 24, _testPolicy.InsuredRisks)).Returns(_testPolicy);
+
+            // Act
+            var actual = _sut.SellPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom, 24, _testPolicy.InsuredRisks);
+
+            // Assert
+            actual.NameOfInsuredObject.Should().Be(_testPolicy.NameOfInsuredObject);
+            actual.ValidFrom.Should().Be(_testPolicy.ValidFrom);
+            actual.ValidTill.Should().Be(_testPolicy.ValidTill);
+            actual.Premium.Should().Be(_testPolicy.Premium);
+        }
+
+        [Fact]
+        public void SellPolicy_InputInvalidRiskName_ThrowsException()
+        {
+            // Arrange
+            _policyRegistryMock
+                .Setup(m => m
+                .RegisterPolicy("AUDI A4 2020", _testPolicy.ValidFrom, 24, new List<Risk>() { new Risk("", 120m) }))
+                .Throws(new InvalidRiskInfoException());
+
+            // Act
+            Action action = () => _sut.SellPolicy("AUDI A4 2020", _testPolicy.ValidFrom, 24, new List<Risk>() { new Risk("", 120m) });
+
+            // Assert
+            action.Should().Throw<InvalidRiskInfoException>()
+               .WithMessage($"[Invalid risk request. Risk properties missing or invalid]");
         }
 
         [Fact]
         public void SellPolicy_InputInvalidRisk_ThrowsException()
         {
             // Arrange
-            var testName = "AUDI A6 2020";
-            var testValidFrom = new DateTime(2022, 01, 01);
-            var testRisks = new List<Risk>() {
-                new Risk("Generals", 360m, new DateTime(2022, 01, 01)), 
-                new Risk("Burglary", 720m, new DateTime(2022, 01, 01)) };
-            short testDuration = 36;
+            _policyRegistryMock
+                .Setup(m => m
+                .RegisterPolicy("AUDI A4 2020", _testPolicy.ValidFrom, 24, new List<Risk>() { new Risk("Terrorism", 120m) }))
+                .Throws(new InvalidRiskInfoException());
 
             // Act
-            Action action = () => _sut.SellPolicy(testName, testValidFrom, testDuration, testRisks);
+            Action action = () => _sut.SellPolicy("AUDI A4 2020", _testPolicy.ValidFrom, 24, new List<Risk>() { new Risk("Terrorism", 120m) });
 
             // Assert
-            action.Should().Throw<InvalidRiskRequestException>()
-                .WithMessage($"[The requested risk offer is not found]");
+            action.Should().Throw<InvalidRiskInfoException>()
+               .WithMessage($"[Invalid risk request. Risk properties missing or invalid]");
         }
 
         [Fact]
         public void SellPolicy_InputInvalidDuplicate_ThrowsException()
         {
             // Arrange
-            var testPolicy = new Policy("BMW 330 2022", new DateTime(2022, 01, 01), 
-                new DateTime(2025, 01, 01), new List<Risk>() { new Risk("General", 360m, new DateTime(2022, 01, 01)) });
+            _policyRegistryMock
+                .Setup(m => m
+                .RegisterPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom, 24, _testPolicy.InsuredRisks))
+                .Returns(_testPolicy);
+
+            _policyRegistryMock
+               .Setup(m => m
+               .RegisterPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom, 24, _testPolicy.InsuredRisks))
+               .Throws(new DuplicatePolicyException(string.Join(", ", _testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom)));
 
             // Act
-            Action action = () => _sut.SellPolicy(testPolicy.NameOfInsuredObject, testPolicy.ValidFrom, 12, testPolicy.InsuredRisks);
+            Action action = () => _sut.SellPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom, 24, _testPolicy.InsuredRisks);
 
             // Assert
             action.Should().Throw<DuplicatePolicyException>()
                 .WithMessage($"[Policy with properties: " +
-                $"'{string.Join(", ", testPolicy.NameOfInsuredObject, testPolicy.ValidFrom)}' is already registered in the system]");
+                $"'{string.Join(", ", _testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom)}' is already registered in the system]");
         }
 
         [Fact]
-        public void SellPolicy_InputInvalidName_ThrowsException()
+        public void AddRisk_InvalidInputName_ThrowsException()
         {
-            // Arrange
-            var testPolicy = new Policy("", new DateTime(2022, 01, 01), 
-                new DateTime(2025, 01, 01), new List<Risk>() { new Risk("General", 360m, new DateTime(2022, 01, 01)) });
-
             // Act
-            Action action = () => _sut.SellPolicy(testPolicy.NameOfInsuredObject, testPolicy.ValidFrom, 12, testPolicy.InsuredRisks);
+            Action action = () => _sut.AddRisk(_testPolicy.NameOfInsuredObject, new Risk("", 1000m), DateTime.Now);
 
             // Assert
-            action.Should().Throw<InvalidPolicyInfoException>()
-                .WithMessage($"[Invalid or missing policy info. " +
-                $"Check: '{string.Join(", ", testPolicy.NameOfInsuredObject, testPolicy.ValidFrom, 12) }' to solve this problem]");
+            action.Should().Throw<InvalidRiskInfoException>().WithMessage($"[Invalid risk request. Risk properties missing or invalid]");
+        }
+
+        [Fact]
+        public void AddRisk_InputInvalidPrice_ThrowsException()
+        {
+            // Act
+            Action action = () => _sut.AddRisk(_testPolicy.NameOfInsuredObject, new Risk("General", 0m), DateTime.Now);
+
+            // Assert
+            action.Should().Throw<InvalidRiskInfoException>().WithMessage($"[Invalid risk request. Risk properties missing or invalid]");
+        }
+
+        [Fact]
+        public void AddRisk_InputValid_RiskAdded()
+        {
+            // Arrange
+            var testDate = new DateTime(2022, 01, 01);
+            var testRisks = new List<Risk>() { _testPolicy.InsuredRisks[0], new Risk("Burglary", 120m, DateTime.Now) };
+
+            _sut.SellPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom, 24, _testPolicy.InsuredRisks);
+            _sut.AddRisk(_testPolicy.NameOfInsuredObject, testRisks[1], _testPolicy.ValidFrom);
+            
+            // Act
+            _policyRegistryMock.Setup(m => m.FindPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom)).Returns(_testPolicy);
+            var actual = _sut.GetPolicy(_testPolicy.NameOfInsuredObject, _testPolicy.ValidFrom);
+
+            actual.NameOfInsuredObject.Should().Be(_testPolicy.NameOfInsuredObject);
         }
     }
 }

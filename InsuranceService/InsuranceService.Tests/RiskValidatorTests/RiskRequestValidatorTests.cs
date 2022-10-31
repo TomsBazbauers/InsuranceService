@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Xunit;
 
-namespace InsuranceService
+namespace InsuranceService.Tests    
 {
     public class RiskRequestValidatorTests
     {
@@ -11,32 +11,37 @@ namespace InsuranceService
         public RiskRequestValidatorTests()
         {
             _sut = new RiskRequestValidator();
-            _riskList = 
-                new List<Risk> { 
-                new Risk("General Insurance", 360m, new DateTime(2022, 01, 01)), 
-                new Risk("Cyber Security", 120m, new DateTime(2022, 01, 01)), 
-                new Risk("Burglary", 240m, new DateTime(2022, 01, 01)), 
-                new Risk("Weather Damage", 180m, new DateTime(2022, 01, 01)) };
+            _riskList = new List<Risk> 
+            { 
+                new Risk("General Insurance", 20m, new DateTime(2022, 01, 01)), 
+                new Risk("Cyber Security", 100m, new DateTime(2022, 01, 01)), 
+                new Risk("Burglary", 250m, new DateTime(2022, 01, 01)), 
+                new Risk("Weather Damage", 400m, new DateTime(2022, 01, 01)) 
+            };
         }
 
-        [Fact]
-        public void IsValid_InputValidName_ReturnsTrue()
+        [Theory]
+        [InlineData(20, 100, 250, 400)]
+        public void IsValid_InputValidName_ReturnsTrue(decimal caseA, decimal caseB, decimal caseC, decimal caseD)
         {
-            // Arrange
-            var testRisk = new Risk("Cyber Security", 120m, new DateTime(2022, 01, 01));
-
             // Act
-            var actual = _sut.IsValid(testRisk, _riskList);
+            var actualA= _sut.IsValid(new Risk("General Insurance", caseA, new DateTime(2022, 01, 01)), _riskList);
+            var actualB = _sut.IsValid(new Risk("Cyber Security", caseB, new DateTime(2022, 01, 01)), _riskList);
+            var actualC = _sut.IsValid(new Risk("Burglary", caseC, new DateTime(2022, 01, 01)), _riskList);
+            var actualD = _sut.IsValid(new Risk("Weather Damage", caseD, new DateTime(2022, 01, 01)), _riskList);
 
             // Assert
-            actual.Should().BeTrue();
+            actualA.Should().BeTrue();
+            actualB.Should().BeTrue();
+            actualC.Should().BeTrue();
+            actualD.Should().BeTrue();
         }
 
         [Fact]
         public void IsValid_InputValidYearlyPrice_ReturnsTrue()
         {
             // Arrange
-            var testRisk = new Risk("General Insurance", 360m, new DateTime(2022, 01, 01));
+            var testRisk = new Risk("General Insurance", 20m, new DateTime(2022, 01, 01));
 
             // Act
             var actual = _sut.IsValid(testRisk, _riskList);

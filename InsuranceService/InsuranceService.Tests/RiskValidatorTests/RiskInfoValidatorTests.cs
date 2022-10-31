@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Xunit;
 
-namespace InsuranceService
+namespace InsuranceService.Tests
 {
     public class RiskInfoValidatorTests
     {

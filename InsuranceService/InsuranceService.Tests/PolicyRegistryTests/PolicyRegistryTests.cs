@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Xunit;
 
-namespace InsuranceService
+namespace InsuranceService.Tests
 {
     public class PolicyRegistryTests
     {
@@ -40,9 +40,11 @@ namespace InsuranceService
             var testName = "AUDI A3 2022";
             var testValidFrom = new DateTime(2022, 01, 01);
             short testDuration = 36;
-            var testRisks = new List<Risk>() { 
+            var testRisks = new List<Risk>() 
+            { 
                 new Risk("Burglary", 320m, new DateTime(2022, 01, 01)), 
-                new Risk("General", 220m, new DateTime(2022, 01, 01)) };
+                new Risk("General", 220m, new DateTime(2022, 01, 01)) 
+            };
             var testValidTill = testValidFrom.AddMonths(testDuration);
             var currentListCount = _registeredPolicies.Count;
 
@@ -65,9 +67,11 @@ namespace InsuranceService
             var testName = "";
             var testValidFrom = new DateTime(2022, 05, 01);
             short testDuration = 36;
-            var testRisks = new List<Risk>() { 
+            var testRisks = new List<Risk>() 
+            { 
                 new Risk("Burglary", 320m, new DateTime(2023, 01, 01)), 
-                new Risk("General", 220m, new DateTime(2023, 01, 01)) };
+                new Risk("General", 220m, new DateTime(2023, 01, 01)) 
+            };
 
             // Act
             Action action = () => _sut.RegisterPolicy(testName, testValidFrom, testDuration, testRisks);
@@ -85,9 +89,11 @@ namespace InsuranceService
             var testName = "MERCEDES-BENZ E400 2010";
             var testValidFrom = DateTime.Now.AddDays(14);
             short testDuration = 36;
-            var testRisks = new List<Risk>() { 
+            var testRisks = new List<Risk>() 
+            { 
                 new Risk("Burglary", 320m, new DateTime(2023, 01, 01)), 
-                new Risk("General", 220m, new DateTime(2023, 01, 01)) };
+                new Risk("General", 220m, new DateTime(2023, 01, 01)) 
+            };
 
             // Act
             Action action = () => _sut.RegisterPolicy(testName, testValidFrom, testDuration, testRisks);
@@ -105,9 +111,11 @@ namespace InsuranceService
             var testName = "SKODA FABIA 2022";
             var testValidFrom = new DateTime(2022, 05, 01);
             short testDuration = 0;
-            var testRisks = new List<Risk>() { 
+            var testRisks = new List<Risk>() 
+            { 
                 new Risk("Burglary", 320m, new DateTime(2022, 05, 01)), 
-                new Risk("General", 220m, new DateTime(2022, 05, 01)) };
+                new Risk("General", 220m, new DateTime(2022, 05, 01)) 
+            };
 
             // Act
             Action action = () => _sut.RegisterPolicy(testName, testValidFrom, testDuration, testRisks);

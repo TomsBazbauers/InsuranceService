@@ -4,7 +4,8 @@
     {
         public bool IsValid(string nameOfInsuredObject, DateTime validFrom, short duration)
         {
-            return !string.IsNullOrEmpty(nameOfInsuredObject.Trim()) 
+            return !string.IsNullOrEmpty(nameOfInsuredObject.Trim())
+                && nameOfInsuredObject.Length > 1
                 && validFrom != DateTime.MinValue 
                 && validFrom <= DateTime.Now
                 && duration > 0

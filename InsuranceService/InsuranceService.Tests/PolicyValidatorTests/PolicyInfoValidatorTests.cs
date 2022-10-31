@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Xunit;
 
-namespace InsuranceService
+namespace InsuranceService.Tests
 {
     public class PolicyInfoValidatorTests
     {
@@ -28,7 +28,7 @@ namespace InsuranceService
         }
 
         [Fact]
-        public void IsValid_InputInvalidValidFromMin_ThrowsException()
+        public void IsValid_InputInvalidValidMin_ThrowsException()
         {
             // Arrange
             var testName = "BMW M3 2022";
@@ -45,7 +45,7 @@ namespace InsuranceService
         }
 
         [Fact]
-        public void IsValid_InputInvalidValidFromMax_ThrowsException()
+        public void IsValid_InputInvalidValidMax_ThrowsException()
         {
             // Arrange
             var testName = "BMW M3 2022";

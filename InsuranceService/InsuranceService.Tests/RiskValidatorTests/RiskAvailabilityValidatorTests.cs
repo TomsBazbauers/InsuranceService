@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Xunit;
 
-namespace InsuranceService
+namespace InsuranceService.Tests
 {
     public class RiskAvailabilityValidatorTests
     {
@@ -11,8 +11,7 @@ namespace InsuranceService
         public RiskAvailabilityValidatorTests()
         {
             _sut = new RiskAvailabilityValidator();
-            _riskList =
-                new List<Risk> 
+            _riskList = new List<Risk> 
                 {
                 new Risk("General Insurance", 360m, new DateTime(2022, 01, 01)), 
                 new Risk("Cyber Security", 120m, new DateTime(2022, 01, 01)),
