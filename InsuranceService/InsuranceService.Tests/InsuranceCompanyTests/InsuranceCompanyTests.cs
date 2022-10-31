@@ -16,10 +16,10 @@ namespace InsuranceService.Tests
 
         public InsuranceCompanyTests()
         {
+            var offer = new List<Risk>() { new Risk("General Insurance", 360m), new Risk("Burglary", 120m) };
             _mocker = new AutoMocker();
             _riskValidators = new List<IRiskValidator>() { new RiskInfoValidator() };
             _riskListValidators = new List<IRiskListValidator>() { new RiskRequestValidator(), new RiskAvailabilityValidator() };
-            var offer = new List<Risk>() { new Risk("General Insurance", 360m), new Risk("Burglary", 120m) };
             _policyRegistryMock = _mocker.GetMock<IPolicyRegistry>();
             _testPolicy = new Policy
                 (
