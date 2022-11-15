@@ -4,7 +4,7 @@
 ### Description:
 
 Simple insurance service for creating, managing insurance policies and their coverage.
-- Unit tested via XUnit, Moq
+- Unit tested via XUnit
 
 ---
 
